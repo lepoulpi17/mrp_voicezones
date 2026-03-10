@@ -1,295 +1,343 @@
-mrp_voicezones
+# mrp_voicezones
 
-Advanced voice zones system for FiveM with in-game polygon editor, pma-voice integration and oxmysql database storage.
+**Advanced Voice Zones System for FiveM**
 
-This resource allows administrators to create voice proximity zones directly in-game and automatically change the player's voice range when entering the zone.
+Create polygon voice zones directly in-game and automatically change player voice range using **pma-voice**.
 
-Features
+Zones are stored in **oxmysql** and synchronized to all players.
 
-In-game polygon zone editor
+---
 
-Voice mode override per zone
+# Features
 
-pma-voice integration
+- In-game polygon zone editor
+- Automatic voice range override
+- pma-voice integration
+- oxmysql database storage
+- Automatic SQL table creation
+- Automatic invalid row cleanup
+- ESX / QBCore / QBX / Standalone compatible
+- ACE permission support
+- Multi-language support
+- Cfx Escrow ready
 
-oxmysql database storage
+---
 
-Automatic SQL table creation
+# Dependencies
 
-Automatic invalid row cleanup
+This resource requires:
 
-ESX / QBCore / QBX / Standalone compatible
+- ox_lib
+- oxmysql
+- pma-voice
+- PolyZone
 
-ACE permission support
+Make sure they start **before mrp_voicezones**.
 
-Multi-language support
+Example server.cfg:
 
-Cfx Escrow ready
-
-Dependencies
-
-This script requires the following resources:
-
-ox_lib
-oxmysql
-pma-voice
-PolyZone
-
-Make sure they are installed and started before mrp_voicezones.
-
-Example server.cfg order:
-
+```
 ensure ox_lib
 ensure oxmysql
 ensure PolyZone
 ensure pma-voice
 ensure mrp_voicezones
+```
 
-Installation
-1. Install the resource
+---
+
+# Installation
+
+## 1. Install the resource
 
 Place the folder inside your resources directory.
 
 Example:
 
+```
 resources/[standalone]/mrp_voicezones
+```
 
-2. Start the resource
+---
 
-Add this to your server.cfg:
+## 2. Start the resource
 
+Add to your server.cfg:
+
+```
 ensure mrp_voicezones
+```
 
-3. Database
+---
 
-This script uses oxmysql only.
+## 3. Database
 
-You do NOT need to import any SQL manually.
+This script uses **oxmysql only**.
 
-The database table is automatically created on resource startup.
+You **do not need to import any SQL file**.
+
+The table is automatically created when the resource starts.
 
 Default table name:
 
+```
 mrp_voicezones
+```
 
 You can change it inside:
 
+```
 shared/config.lua
+```
 
 Example:
 
+```lua
 Config.Database.table = "mrp_voicezones"
+```
 
-Permissions
+---
+
+# Permissions
 
 Admins must have permission to open the voice zone menu.
 
 Default command:
 
+```
 /voicezones
+```
 
-Permission example using ACE:
+Example ACE permissions:
 
+```
 add_ace group.admin mrp.voicezones allow
 add_ace group.superadmin mrp.voicezones allow
+```
 
-You can also configure permissions using:
+Permissions can also be configured using:
 
-framework groups
+- framework groups
+- identifiers
+- ACE permissions
 
-player identifiers
+Configuration file:
 
-ACE permissions
-
-All settings are located in:
-
+```
 shared/config.lua
+```
 
-Configuration
+---
+
+# Configuration
 
 Main configuration file:
 
+```
 shared/config.lua
+```
 
-Example important settings:
+Example settings:
 
-Locale:
+## Locale
 
+```lua
 Config.Locale = "en"
 Config.FallbackLocale = "en"
+```
 
-Permission system:
+## Permission system
 
+```lua
 Config.UseAcePermissions = true
 Config.AcePermission = "mrp.voicezones"
 Config.FrameworkPermissionMode = "group"
+```
 
-Database:
+## Database
 
+```lua
 Config.Database = {
-table = "mrp_voicezones",
-startupRetryCount = 20,
-startupRetryDelayMs = 500,
-cleanupInvalidRowsOnBoot = true
+    table = "mrp_voicezones",
+    startupRetryCount = 20,
+    startupRetryDelayMs = 500,
+    cleanupInvalidRowsOnBoot = true
 }
+```
 
-Voice Modes
+---
 
-Voice modes define how players talk inside zones.
+# Voice Modes
 
-Example configuration:
+Voice modes control the talking range inside zones.
 
+Example:
+
+```lua
 Config.VoiceModes = {
 
-whisper = {
-range = 1.5,
-mode = 1,
-priority = 30
-},
+    whisper = {
+        range = 1.5,
+        mode = 1,
+        priority = 30
+    },
 
-normal = {
-range = 7.0,
-mode = 2,
-priority = 20
-},
+    normal = {
+        range = 7.0,
+        mode = 2,
+        priority = 20
+    },
 
-shout = {
-range = 15.0,
-mode = 3,
-priority = 10
+    shout = {
+        range = 15.0,
+        mode = 3,
+        priority = 10
+    }
+
 }
-
-}
+```
 
 Explanation:
 
-range = voice distance
-mode = pma-voice talking mode index
-priority = zone priority when zones overlap
+| Setting | Description |
+|--------|-------------|
+| range | voice distance |
+| mode | pma-voice talking mode |
+| priority | zone priority |
 
-How It Works
+Higher priority zones override lower ones.
 
-Admin opens /voicezones
+---
 
-Creates a polygon zone
+# How It Works
 
-Selects voice mode
+1. Admin runs `/voicezones`
+2. Creates a polygon zone
+3. Selects a voice mode
+4. Zone is saved in MySQL
+5. All players receive zone sync
+6. Voice range changes when entering the zone
+7. Voice returns to default when leaving
 
-Zone is saved in MySQL
+---
 
-All players receive zone sync
-
-When entering the zone voice range changes automatically
-
-When leaving the zone voice returns to default
-
-Server Exports
+# Server Exports
 
 Get all zones:
 
+```lua
 local zones = exports.mrp_voicezones:GetZones()
+```
 
 Get a zone by ID:
 
+```lua
 local zone = exports.mrp_voicezones:GetZoneById(1)
+```
 
 Get best zone for coordinates:
 
+```lua
 local zone = exports.mrp_voicezones:GetBestZoneForCoords(vector3(441.2, -981.9, 30.6))
+```
 
 or
 
+```lua
 local zone = exports.mrp_voicezones:GetBestZoneForCoords(441.2, -981.9, 30.6)
+```
 
-Client Exports
+---
 
-Get current player zone:
+# Client Exports
 
+Get current zone:
+
+```lua
 local zone = exports.mrp_voicezones:GetCurrentZone()
+```
 
-Get all synced zones:
+Get all zones:
 
+```lua
 local zones = exports.mrp_voicezones:GetZones()
+```
 
-Escrow Editable Files
+---
 
-This resource supports Cfx Escrow.
+# Escrow Editable Files
+
+This resource supports **Cfx Escrow**.
 
 Editable files:
 
+```
 shared/config.lua
 shared/locale.lua
 locales/*.lua
+```
 
-Example fxmanifest.lua escrow configuration:
+Example fxmanifest configuration:
 
+```lua
 escrow_ignore {
-"shared/config.lua",
-"shared/locale.lua",
-"locales/*.lua"
+    "shared/config.lua",
+    "shared/locale.lua",
+    "locales/*.lua"
 }
+```
 
-File Structure
+---
 
+# File Structure
+
+```
 mrp_voicezones
+│
+├─ fxmanifest.lua
+├─ README.md
+│
+├─ bridge
+│  ├─ client.lua
+│  └─ server.lua
+│
+├─ client
+│  └─ main.lua
+│
+├─ server
+│  └─ main.lua
+│
+├─ shared
+│  ├─ config.lua
+│  └─ locale.lua
+│
+└─ locales
+   ├─ en.lua
+   ├─ fr.lua
+   ├─ es.lua
+   └─ it.lua
+```
 
-fxmanifest.lua
-README.md
+---
 
-bridge/
-client.lua
-server.lua
-
-client/
-main.lua
-
-server/
-main.lua
-
-shared/
-config.lua
-locale.lua
-
-locales/
-en.lua
-fr.lua
-es.lua
-it.lua
-
-Troubleshooting
+# Troubleshooting
 
 Menu does not open:
 
-check ACE permission
-
-check dependency start order
-
-check pma-voice installation
-
-check ox_lib installation
+- Check ACE permissions
+- Check dependency start order
+- Verify ox_lib installation
 
 Script does not start:
 
-verify oxmysql is running
+- Verify oxmysql is running
+- Verify PolyZone is installed
+- Verify resource start order
 
-verify PolyZone is installed
+---
 
-verify resource start order
+# License
 
-Default Setup Example
+This resource is intended for **FiveM servers only**.
 
-server.cfg example:
-
-ensure ox_lib
-ensure oxmysql
-ensure PolyZone
-ensure pma-voice
-ensure mrp_voicezones
-
-add_ace group.admin mrp.voicezones allow
-add_ace group.superadmin mrp.voicezones allow
-
-License
-
-This resource is intended for FiveM servers only.
-Redistribution or resale without permission from the author is not allowed.
+Redistribution, resale or leaking without permission from the author is not allowed.
