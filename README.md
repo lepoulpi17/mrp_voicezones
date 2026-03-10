@@ -277,47 +277,6 @@ shared/locale.lua
 locales/*.lua
 ```
 
-Example fxmanifest configuration:
-
-```lua
-escrow_ignore {
-    "shared/config.lua",
-    "shared/locale.lua",
-    "locales/*.lua"
-}
-```
-
----
-
-# File Structure
-
-```
-mrp_voicezones
-│
-├─ fxmanifest.lua
-├─ README.md
-│
-├─ bridge
-│  ├─ client.lua
-│  └─ server.lua
-│
-├─ client
-│  └─ main.lua
-│
-├─ server
-│  └─ main.lua
-│
-├─ shared
-│  ├─ config.lua
-│  └─ locale.lua
-│
-└─ locales
-   ├─ en.lua
-   ├─ fr.lua
-   ├─ es.lua
-   └─ it.lua
-```
-
 ---
 
 # Troubleshooting
